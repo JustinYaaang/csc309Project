@@ -1,0 +1,194 @@
+<head>
+	 <link href="main.css" type="text/css" rel="stylesheet" />
+<body>
+	<canvas id="canvas"></canvas>
+	<script>
+		var max_width = window.innerWidth, max_hight = window.innerHeight, NumOfPoints = 25;//initial the max width, hight and num of points in main page
+		
+		var canvas = document.getElementById('canvas');//get the object
+		canvas.width = max_width,//set the max width
+		canvas.height = max_hight;//set the max hight
+		var context = canvas.getContext('2d');
+		context.strokeStyle = 'rgba(0,0,0,0.5)',//initial the stroke style
+		context.strokeWidth = 1,//set the stroke's width
+		context.fillStyle = 'rgba(0,0,0,0.2)';//fill the color into the point
+		var circleList = [];
+		window.addEventListener('resize', function(event){
+			max_width = window.innerWidth;
+			max_hight = window.innerHeight;
+			canvas.width = max_width,//set the max width
+			canvas.height = max_hight;//set the max hight
+			resize();
+		
+		});
+		function Line (x, y, _x, _y, o) {
+			this.origin_X = x,//initial x of the line
+			this.origin_Y = y,//initial y of the line
+			this.end_X = _x,//where x end of the line
+			this.end_Y = _y,//where y end of the line
+			this.o = o;//transparency of the line
+		}
+
+		function Circle(x, y, r, currX, currY){//initialize the origin of circle here
+			this.x = x,//initialize the x
+			this.y = y,//initialize the y
+			this.r = r,//initialize the radius
+			this.currX = currX,//new x where it moves to
+			this.currY = currY;//new y where it moves to
+		}
+
+		function random_Num(max, _min) {//generates a random number within the max and min
+			var min = arguments[1] || 0;
+			return Math.floor(Math.random()*(max-min+1)+min);
+		}
+
+		function drawCricle (cxt, x, y, r, currX, currY) {
+			var circle = new Circle(x, y, r, currX, currY)
+			cxt.beginPath()
+			cxt.arc(circle.x, circle.y, circle.r, 0, 2*Math.PI)
+			cxt.closePath()
+			cxt.fill();
+			return circle;
+		}
+
+		function drawLine (cxt, x, y, _x, _y, o) {//connect the two point 
+			var line = new Line(x, y, _x, _y, o)//create the new line here
+			cxt.beginPath()
+			cxt.strokeStyle = 'rgba(0,0,0,'+ o +')'//make the line to stroke
+			cxt.moveTo(line.origin_X, line.origin_Y)//the destination where the line moves to by x
+			cxt.lineTo(line.end_X, line.end_Y)//the desination where the line moves to by y
+			cxt.closePath()
+			cxt.stroke();
+
+		}
+		function resize(){
+			canvas.width = window.innerWidth,//set the max width
+			canvas.height = window.innerHeight;//set the max hight
+			context.fillStyle = 'rgba(0,0,0,0.2)';
+		}
+		function origin() {//creates origin for each new pinte in html, and limit the number of points that will be generated in html
+			circleList = [];
+			for (var i = 0; i < NumOfPoints; i++) {//counts down the number of the points that have been drawn
+				circleList.push(drawCricle(context, random_Num(max_width), random_Num(max_hight), random_Num(15, 2), random_Num(10, -10)/40, random_Num(10, -10)/40));
+			}
+			draw();
+			resize();
+		}
+
+
+		function draw() {//make each small part to move by updating the x and y
+			context.clearRect(0,0,canvas.width, canvas.height);//clean the old line here
+			for (var i = 0; i < NumOfPoints; i++) {//loop the circle in the circleList
+				drawCricle(context, circleList[i].x, circleList[i].y, circleList[i].r);
+			}
+			for (var i = 0; i < NumOfPoints; i++) {//loop the circle in the circleList
+				for (var j = 0; j < NumOfPoints; j++) {
+					if (i + j < NumOfPoints) {
+						var A = Math.abs(circleList[i+j].x - circleList[i].x),
+							B = Math.abs(circleList[i+j].y - circleList[i].y);
+						var lineLength = Math.sqrt(A*A + B*B);//get the area
+						var C = 1/lineLength*7-0.009;
+						var lineOpacity = C > 0.03 ? 0.03 : C;
+						if (lineOpacity > 0) {
+							drawLine(context, circleList[i].x, circleList[i].y, circleList[i+j].x, circleList[i+j].y, lineOpacity);
+						}
+					}
+				}
+			}
+		}
+
+
+		window.onload = function () {
+			origin();
+			setInterval(function () {//load the function to start drawing
+				for (var i = 0; i < NumOfPoints; i++) {
+					var cir = circleList[i];
+					cir.x += cir.currX;
+					cir.y += cir.currY;
+					if (cir.x > max_width) cir.x = 0;
+					else if (cir.x < 0) cir.x = max_width;
+					if (cir.y > max_hight) cir.y = 0;
+					else if (cir.y < 0) cir.y = max_hight;
+					
+				}
+				draw();
+			}, 16);
+		}
+
+	</script>
+		<ul id="nav">
+      <li>&nbsp&nbsp&nbsp</li>
+      <li><a href="home.html"><font color="white">TechHub</font></a></li>
+      <li id="searchbar" class="navi" class="hidden">
+        <input id="bar" type="text" placeholder="Search for Topic, Question or Answer..."></input><button  href="login.html" class="button" type="button">Search</button>
+      </li>
+        <li ><a href="main.html"><font color="white">Feed</a></font></li>
+        <li  ><a href="community.html"><font color="white">Community</a></font></li>
+        <li ><a href="newpost.html"><font color="white">Post</a></font></li>
+        <li ><a href="login.html"><font color="white">Login</font></a></li>
+
+        <li class="arrow"><a href="#nav2"><font color="white">&#10552</font></a></li>
+    </ul>
+    
+  </bar>
+	</br></br>
+
+	<div class="head">
+	</br>
+	</br>
+	</id>
+	<div id="sidebar" >
+		<ul>
+			<li><a href="">What's Hot</a></li>
+			<li><a href="main.html">My Feed</a></li>
+			<li><a href="">My Collection</a></li>
+			<li><a href="">What's new</a></li>
+			<li><a href="">Setting</a></li>
+			<li id="space"></li>
+		</ul>
+	</div>
+
+	<div id="content">
+		
+		
+
+		<div class="post">
+			<div class="metadata">
+				<text> New Question added to Topic: Surfacebook, posted by <a href="user.html">Justin Yang</a><text>
+				<img align="right" class="ava" src="resource/icon1.png" alt="Mountain View" style="width:40px;height:40px;"></img>
+			</div>
+		<text class="title">How is Surfacebook? </text></br>
+		<text class="cont">Can I play League of Legends on it? Thanks in advance.</br></br></br></text>
+		<div class="botbar"><text ><button class="vote">Upvote</button>(108), <a href="">Downvote</a>(20), <a href="">Comment</a>(3)</text></div>
+		</div>
+		</br>
+		
+		<div class="post">
+			<div class="metadata">
+			<text> New Article added to Topic: Camera, posted by <a href="user.html">Justin Yang</a></text>
+			<img align="right" class="ava" src="resource/icon2.png" alt="Mountain View" style="width:40px;height:40px;"></img>
+			</div>
+			<text class="title">Canon VS Nikon </text></br>
+			<text class="cont">Who makes the best DSLRs, Canon or Nikon? It's the impossible question. If it wasn't, one of these giants of the camera industry would be out of business by now.The fact is, Canon and Nikon offer some of the best cameras, flash systems and accessories - and they have done for years.Whichever line you choose, you're investing in an extensive, well-supported system that catryone, from to experts, from wedding photographers to wildlife pros.Has that stopped forums descending into flame wars over whether Canon or Nikon is best? <a href="">Expand</a></br></br></br></text>
+			<div class="botbar"><text ><button class="vote">Upvote</button>(108), <a href="">Downvote</a>(20), <a href="">Comment</a>(3)</text></div>
+		</div>
+		</br>
+		<div class="metadata">
+			<text> <a href="user.html">Justin Yang</a> asked a new question</text>
+				<img align="right" class="ava" src="resource/icon3.png" alt="Mountain View" style="width:40px;height:40px;"></img>
+		</div>
+		
+		<div class="post">
+		<text class="title">The best VR product?  </text></br>
+		<text class="cont">Virtual reality is back baby - 2016 is set to be the year when the likes of Oculus Rift, PlayStation VR and the HTC Vive Pre take VR mainstream.Virtual reality is an immersive experience in which your head movements are tracked in a three-dimensional world, making it ideally suited to games and even movies.</br></br></br></text>
+		<div class="botbar"><text ><button class="vote">Upvote</button>(108), <a href="">Downvote</a>(20), <a href="">Comment</a>(3)</text></div>
+
+		</div>
+		</br>
+		
+		<div class="post">
+		<text class="title">Load More...</text></br>
+		</div>
+		</div>
+		
+</body>

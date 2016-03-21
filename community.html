@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<!--
+TEMPLATE
+Name: Zoo Planet
+Version: 1.0
+Created: 23 January 2014
+
+AUTHOR
+Design and code by: http://www.bootshape.com
+Free stock photos by: http://www.bootshape.com
+
+Read full license: http://www.bootshape.com/license.php
+
+CREDITS
+Background: http://subtlepatterns.com/ (extra_clean_paper)
+Fonts: http://www.google.com/fonts (Actor, Duru_Sans)
+
+SUPPORT
+E-mail: bootshape.com@gmail.com
+Contact: http://www.bootshape.com/contact.php
+-->
+<html>
+  <head>
+    <title>techhub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+    
+    <!--Google Fonts-->
+    <link href='http://fonts.googleapis.com/css?family=Belgrano|Courgette&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+
+    
+    <!--Bootshape-->
+    <link href="css/bootshape.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+  <script>
+    var max_width = window.innerWidth, max_hight = window.innerHeight, NumOfPoints = 25;//initial the max width, hight and num of points in main page
+    
+    var canvas = document.getElementById('canvas');//get the object
+    canvas.width = max_width,//set the max width
+    canvas.height = max_hight;//set the max hight
+    var context = canvas.getContext('2d');
+    context.strokeStyle = 'rgba(0,0,0,0.5)',//initial the stroke style
+    context.strokeWidth = 1,//set the stroke's width
+    context.fillStyle = 'rgba(0,0,0,0.2)';//fill the color into the point
+    var circleList = [];
+    function Line (x, y, _x, _y, o) {
+      this.origin_X = x,//initial x of the line
+      this.origin_Y = y,//initial y of the line
+      this.end_X = _x,//where x end of the line
+      this.end_Y = _y,//where y end of the line
+      this.o = o;//transparency of the line
+    }
+
+    function Circle(x, y, r, currX, currY){//initialize the origin of circle here
+      this.x = x,//initialize the x
+      this.y = y,//initialize the y
+      this.r = r,//initialize the radius
+      this.currX = currX,//new x where it moves to
+      this.currY = currY;//new y where it moves to
+    }
+
+    function random_Num(max, _min) {//generates a random number within the max and min
+      var min = arguments[1] || 0;
+      return Math.floor(Math.random()*(max-min+1)+min);
+    }
+
+    function drawCricle (cxt, x, y, r, currX, currY) {
+      var circle = new Circle(x, y, r, currX, currY)
+      cxt.beginPath()
+      cxt.arc(circle.x, circle.y, circle.r, 0, 2*Math.PI)
+      cxt.closePath()
+      cxt.fill();
+      return circle;
+    }
+
+    function drawLine (cxt, x, y, _x, _y, o) {//connect the two point 
+      var line = new Line(x, y, _x, _y, o)//create the new line here
+      cxt.beginPath()
+      cxt.strokeStyle = 'rgba(0,0,0,'+ o +')'//make the line to stroke
+      cxt.moveTo(line.origin_X, line.origin_Y)//the destination where the line moves to by x
+      cxt.lineTo(line.end_X, line.end_Y)//the desination where the line moves to by y
+      cxt.closePath()
+      cxt.stroke();
+
+    }
+    function resize(){
+      canvas.width = window.innerWidth,//set the max width
+      canvas.height = window.innerHeight;//set the max hight
+      context.fillStyle = 'rgba(0,0,0,0.2)';
+    }
+    function origin() {//creates origin for each new pinte in html, and limit the number of points that will be generated in html
+      circleList = [];
+      for (var i = 0; i < NumOfPoints; i++) {//counts down the number of the points that have been drawn
+        circleList.push(drawCricle(context, random_Num(max_width), random_Num(max_hight), random_Num(15, 2), random_Num(10, -10)/40, random_Num(10, -10)/40));
+      }
+      draw();
+      resize();
+    }
+
+
+    function draw() {//make each small part to move by updating the x and y
+      context.clearRect(0,0,canvas.width, canvas.height);//clean the old line here
+      for (var i = 0; i < NumOfPoints; i++) {//loop the circle in the circleList
+        drawCricle(context, circleList[i].x, circleList[i].y, circleList[i].r);
+      }
+      for (var i = 0; i < NumOfPoints; i++) {//loop the circle in the circleList
+        for (var j = 0; j < NumOfPoints; j++) {
+          if (i + j < NumOfPoints) {
+            var A = Math.abs(circleList[i+j].x - circleList[i].x),
+              B = Math.abs(circleList[i+j].y - circleList[i].y);
+            var lineLength = Math.sqrt(A*A + B*B);//get the area
+            var C = 1/lineLength*7-0.009;
+            var lineOpacity = C > 0.03 ? 0.03 : C;
+            if (lineOpacity > 0) {
+              drawLine(context, circleList[i].x, circleList[i].y, circleList[i+j].x, circleList[i+j].y, lineOpacity);
+            }
+          }
+        }
+      }
+    }
+
+
+    window.onload = function () {
+      origin();
+      setInterval(function () {//load the function to start drawing
+        for (var i = 0; i < NumOfPoints; i++) {
+          var cir = circleList[i];
+          cir.x += cir.currX;
+          cir.y += cir.currY;
+          if (cir.x > max_width) cir.x = 0;
+          else if (cir.x < 0) cir.x = max_width;
+          if (cir.y > max_hight) cir.y = 0;
+          else if (cir.y < 0) cir.y = max_hight;
+          
+        }
+        draw();
+      }, 16);
+    }
+
+  </script>
+    <!-- Navigation bar -->
+  <div id="sidebar">
+    <br><br><br>    <br>
+
+    <span style="font-size: 30px">Category</span>
+    <br><br>
+
+    <div class="categories">
+      PC
+    </div>
+    <ul>
+      <li><a href="main.html">Desktop</a></li>
+        <li><a href="news.asp">Laptop</a></li>
+        <li><a href="news.asp">More...</a></li>
+
+    </ul>
+
+    <div class="categories">
+      PC
+    </div>
+    <ul>
+      <li><a href="main.html">Desktop</a></li>
+        <li><a href="news.asp">Laptop</a></li>
+        <li><a href="news.asp">More...</a></li>
+
+    </ul>
+    <div class="categories">
+      PC
+    </div>
+    <ul>
+      <li><a href="main.html">Desktop</a></li>
+        <li><a href="news.asp">Laptop</a></li>
+        <li><a href="news.asp">More...</a></li>
+
+    </ul>   <div class="categories">
+      PC
+    </div>
+    <ul>
+      <li><a href="main.html">Desktop</a></li>
+        <li><a href="news.asp">Laptop</a></li>
+        <li><a href="news.asp">More...</a></li>
+
+    </ul>
+
+    <div class="categories">
+      PC
+    </div>
+    <ul>
+      <li><a href="main.html">Desktop</a></li>
+        <li><a href="news.asp">Laptop</a></li>
+        <li><a href="news.asp">More...</a></li>
+
+    </ul>
+    <div class="categories">
+      PC
+    </div>
+    <ul>
+      <li><a href="main.html">Desktop</a></li>
+        <li><a href="news.asp">Laptop</a></li>
+        <li><a href="news.asp">More...</a></li>
+
+    </ul>
+    <div class="categories">
+      PC
+    </div>
+    <ul>
+      <li><a href="main.html">Desktop</a></li>
+        <li><a href="news.asp">Laptop</a></li>
+        <li><a href="news.asp">More...</a></li>
+
+    </ul>
+
+    <div class="categories">
+      PC
+    </div>
+    <ul>
+      <li><a href="main.html">Desktop</a></li>
+        <li><a href="news.asp">Laptop</a></li>
+        <li><a href="news.asp">More...</a></li>
+
+    </ul>
+    <div class="categories">
+      PC
+    </div>
+    <ul>
+      <li><a href="main.html">Desktop</a></li>
+        <li><a href="news.asp">Laptop</a></li>
+        <li><a href="news.asp">More...</a></li>
+
+    </ul>
+  </div> 
+
+
+
+
+  <!-- sidebar end-->
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation"
+>
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+     <ul id="nav">
+      <li>&nbsp&nbsp&nbsp</li>
+      <li><a href="home.html"><font color="white">TechHub</font></a></li>
+      <li id="searchbar" class="navi" class="hidden">
+        <input id="bar" type="text" placeholder="Search for Topic, Question or Answer..."></input><button  href="login.html" id="searchbutton2" class="button" type="button">Search</button>
+      </li>
+        <li ><a href="main.html"><font color="white">Feed</a></font></li>
+        <li  ><a href="community.html"><font color="white">Community</a></font></li>
+        <li ><a href="newpost.html"><font color="white">Post</a></font></li>
+        <li ><a href="login.html"><font color="white">Login</font></a></li>
+
+        <li class="arrow"><a href="#nav2"><font color="white">&#10552</font></a></li>
+    </ul>
+        </div>
+
+      </div>
+    </div>
+ <!-- End Navigation bar -->
+  <div id="largep">
+
+    <!-- Slide gallery -->
+    <div class="jumbotron" >
+      <div class="container">
+        <div class="col-xs-12">
+        <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+          <!-- Indicators -->
+          <ol class="carousel-indicators">
+            <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+            <li data-target="#carousel-example-generic" data-slide-to="1"></li>
+            <li data-target="#carousel-example-generic" data-slide-to="2"></li>
+          </ol>
+          <!-- Wrapper for slides -->
+          <div class="carousel-inner" id="firstAD">
+            <div class="item active">
+              <img src="img/ele.jpg" alt="">
+              <div class="carousel-caption">
+              </div>
+            </div>
+            <div class="item">
+              <img src="img/p2.jpg" alt="">
+              <div class="carousel-caption">
+              </div>
+            </div>
+            <div class="item">
+              <img src="img/p3.jpg" alt="">
+              <div class="carousel-caption">
+              </div>
+            </div>
+          </div>
+          <!-- Controls -->
+          <a class="left carousel-control" href="#carousel-example-generic" data-slide="prev">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+          </a>
+          <a class="right carousel-control" href="#carousel-example-generic" data-slide="next">
+            <span class="glyphicon glyphicon-chevron-right"></span>
+          </a>
+        </div>
+        </div>
+      </div><!-- End Slide gallery -->
+    </div>
+
+ 
+    <!-- Thumbnails -->
+    <div class="container thumbs" >
+      <div class="col-sm-6 col-md-4">
+        <div class="thumbnail">
+          <img src="img/p1.jpg" alt="" class="img-responsive">
+          <div class="caption">
+            <h3 class="">Phone</h3>
+            <p>The moment you use iPhone 6s, you know you have never felt anything like it. With a single press, 3D Touch lets you do more than ever before. Live Photos bring your memories to life in a powerfully vivid way...</p>
+            <div class="btn-toolbar text-center">
+              <a href="#" role="button" class="btn btn-primary pull-right">Details</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-4">
+        <div class="thumbnail">
+          <img src="img/camera.jpg" alt="" class="img-responsive">
+          <div class="caption">
+            <h3 class="">Camera</h3>
+            <p>Whether you are photographing friends or a stunning sunset, there is a Sony camera to make it easy. But which one? Use our guide to explore...</p>
+            <div class="btn-toolbar text-center">
+              <a href="#" role="button" class="btn btn-primary pull-right">Details</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-4">
+        <div class="thumbnail">
+          <img src="img/computer.jpg" alt="" class="img-responsive">
+          <div class="caption">
+            <h3 class="">PC</h3>
+            <p>Surface: Light and powerful. Powered by Windows 10, Surface Pro 4 turns from a tablet into a full powered laptop while running all of your desktop software...</p>
+            <div class="btn-toolbar text-center">
+              <a href="#" role="button" class="btn btn-primary pull-right">Details</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- End Thumbnails -->
+    <!-- Content -->
+    <div class="container">
+      <div class="">
+        <h3 class="welcome_con">Welcome</h3>
+        <p id="welcome_text">Our project is a "knowledge and experience sharing" website which aims at helping users get and share not only the quickest but "real" feedback of latest technologies. Unlike those technique web portals, our website works like a combination of both news feed and community of tech fans. Nowadays, there are a few websites, including some online-shopping websites, that allows customers to comment or rate on a specific item that they had purchased through their web.</p>
+      </div>
+ 
+    </div><!-- End Content -->
+    <!-- Footer -->
+   
+ <!--end of large pictures-->
+  </div>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="js/jquery.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootshape.js"></script>
+  </body>
+</html>
